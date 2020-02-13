@@ -58,6 +58,7 @@ public class BlockDifficultyValidationRuleTest {
             .withGasUsed(0)
             .withBlockTimestamp(blockTimestamp)
             .withUncleCount(uCount)
+            .withMergedMiningForkDetectionData(new byte[0])
         .build();
 
         return header;
@@ -81,7 +82,11 @@ public class BlockDifficultyValidationRuleTest {
 
         BlockHeader blockHeader = getEmptyHeader(blockDifficulty, blockTimeStamp ,1);
 
-        BlockHeader parentHeader = blockFactory.buildHeader().withDifficulty(parentDifficulty.getBytes()).build();
+        BlockHeader parentHeader = blockFactory.buildHeader()
+            .withDifficulty(parentDifficulty.getBytes())
+            .withCoinbase(TestUtils.randomAddress().getBytes())
+            .withMergedMiningForkDetectionData(new byte[0])
+        .build();
 
         Mockito.when(block.getHeader())
                 .thenReturn(blockHeader);
