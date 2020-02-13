@@ -20,6 +20,7 @@ package org.ethereum.core;
 
 import co.rsk.config.MiningConfig;
 import co.rsk.core.BlockDifficulty;
+import co.rsk.core.BlockHeaderBuilder;
 import co.rsk.core.Coin;
 import co.rsk.core.RskAddress;
 import co.rsk.remasc.RemascTransaction;
@@ -256,5 +257,9 @@ public class BlockFactory {
         }
 
         return Collections.unmodifiableList(parsedTxs);
+    }
+
+    public BlockHeaderBuilder buildHeader() {
+        return new BlockHeaderBuilder(activationConfig);
     }
 }
