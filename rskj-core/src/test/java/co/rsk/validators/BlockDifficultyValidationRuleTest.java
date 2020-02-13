@@ -20,7 +20,6 @@ package co.rsk.validators;
 
 import co.rsk.core.BlockDifficulty;
 import co.rsk.core.DifficultyCalculator;
-import co.rsk.core.bc.BlockHeaderBuilder;
 import org.ethereum.TestUtils;
 import org.ethereum.config.Constants;
 import org.ethereum.config.blockchain.upgrades.ActivationConfig;
@@ -52,7 +51,7 @@ public class BlockDifficultyValidationRuleTest {
     }
 
     private BlockHeader getEmptyHeader(BlockDifficulty difficulty, long blockTimestamp, int uCount) {
-        BlockHeader header = new BlockHeaderBuilder().buildHeader(blockFactory)
+        BlockHeader header = blockFactory.buildHeader()
             .withCoinbase(TestUtils.randomAddress().getBytes())
             .withDifficulty(difficulty.getBytes())
             .withNumber(0)
@@ -77,17 +76,12 @@ public class BlockDifficultyValidationRuleTest {
         BlockDifficulty parentDifficulty = new BlockDifficulty(new BigInteger("2048"));
         BlockDifficulty blockDifficulty = new BlockDifficulty(new BigInteger("2049"));
 
-        //blockDifficulty = blockDifficulty.add(AbstractConfig.getConstants().getDifficultyBoundDivisor());
-
         Mockito.when(block.getDifficulty())
                 .thenReturn(blockDifficulty);
 
-        BlockHeader blockHeader =getEmptyHeader(blockDifficulty, blockTimeStamp ,1);
+        BlockHeader blockHeader = getEmptyHeader(blockDifficulty, blockTimeStamp ,1);
 
-        BlockHeader parentHeader = Mockito.mock(BlockHeader.class);
-
-        Mockito.when(parentHeader.getDifficulty())
-                .thenReturn(parentDifficulty);
+        BlockHeader parentHeader = blockFactory.buildHeader().withDifficulty(parentDifficulty.getBytes()).build();
 
         Mockito.when(block.getHeader())
                 .thenReturn(blockHeader);
