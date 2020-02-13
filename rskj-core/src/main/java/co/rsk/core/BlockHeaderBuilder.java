@@ -1,10 +1,18 @@
 package co.rsk.core;
 
+import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.ethereum.config.blockchain.upgrades.ActivationConfig;
 import org.ethereum.config.blockchain.upgrades.ConsensusRule;
 import org.ethereum.core.BlockFactory;
 import org.ethereum.core.BlockHeader;
 import org.ethereum.util.RLP;
+
+import static org.ethereum.crypto.HashUtil.EMPTY_TRIE_HASH;
+
+/**
+ * I've realized that this class is useless :(,
+ * its only for testing => mockito is a better choice
+ */
 
 public class BlockHeaderBuilder {
     private final ActivationConfig activationConfig;
@@ -13,7 +21,6 @@ public class BlockHeaderBuilder {
     private int number;
     private int gasUsed;
     private long blockTimestamp;
-    private BlockFactory blockFactory;
     private byte[] parentHash;
     private byte[] unclesHash;
     private byte[] logsBloom;
@@ -28,9 +35,7 @@ public class BlockHeaderBuilder {
     private byte[] bitcoinMergedMiningHeader;
     private byte[] bitcoinMergedMiningMerkleProof;
     private byte[] bitcoinMergedMiningCoinbaseTransaction;
-    private byte[] miningForkDetectionData;
     private byte[] mergedMiningForkDetectionData;
-    private volatile boolean sealed;
 
     public BlockHeaderBuilder(ActivationConfig activationConfig) {
         this.activationConfig = activationConfig;
@@ -42,13 +47,13 @@ public class BlockHeaderBuilder {
                 mergedMiningForkDetectionData.length > 0;
 
         return new BlockHeader(
-         parentHash, unclesHash, new RskAddress(coinbase),  stateRoot,
-         txTrieRoot,  receiptTrieRoot,  logsBloom,  RLP.parseBlockDifficulty(difficulty),
-         number,  gasLimit,  gasUsed,  blockTimestamp,  extraData,
-         paidFees,  bitcoinMergedMiningHeader,  bitcoinMergedMiningMerkleProof,
-         bitcoinMergedMiningCoinbaseTransaction,  mergedMiningForkDetectionData,
-         minimumGasPrice,  uncleCount,  sealed,
-         useRskip92Encoding,  includeForkDetectionData
+             parentHash, unclesHash, new RskAddress(coinbase),  stateRoot,
+             txTrieRoot,  receiptTrieRoot,  logsBloom,  RLP.parseBlockDifficulty(difficulty),
+             number,  gasLimit,  gasUsed,  blockTimestamp,  extraData,
+             paidFees,  bitcoinMergedMiningHeader,  bitcoinMergedMiningMerkleProof,
+             bitcoinMergedMiningCoinbaseTransaction,  mergedMiningForkDetectionData,
+             minimumGasPrice,  uncleCount,  false,
+             useRskip92Encoding,  includeForkDetectionData
         );
     }
 
@@ -141,17 +146,6 @@ public class BlockHeaderBuilder {
         this.bitcoinMergedMiningCoinbaseTransaction = bitcoinMergedMiningCoinbaseTransaction;
         return this;
     }
-
-    public BlockHeaderBuilder withMiningForkDetectionData(byte[] miningForkDetectionData) {
-        this.miningForkDetectionData = miningForkDetectionData;
-        return this;
-    }
-
-    public BlockHeaderBuilder withSealed(boolean sealed) {
-        this.sealed = sealed;
-        return this;
-    }
-
 
     public BlockHeaderBuilder withTxTrieRoot(byte[] txTrieRoot) {
         this.txTrieRoot = txTrieRoot;
