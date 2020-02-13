@@ -20,7 +20,6 @@ package co.rsk.validators;
 
 import co.rsk.core.BlockDifficulty;
 import co.rsk.core.DifficultyCalculator;
-import co.rsk.core.bc.BlockHeaderBuilder;
 import org.ethereum.TestUtils;
 import org.ethereum.config.Constants;
 import org.ethereum.config.blockchain.upgrades.ActivationConfig;
@@ -52,7 +51,7 @@ public class BlockDifficultyValidationRuleTest {
     }
 
     private BlockHeader getEmptyHeader(BlockDifficulty difficulty, long blockTimestamp, int uCount) {
-        BlockHeader header = new BlockHeaderBuilder().buildHeader(blockFactory)
+        BlockHeader header = blockFactory.buildHeader()
             .withCoinbase(TestUtils.randomAddress().getBytes())
             .withDifficulty(difficulty.getBytes())
             .withNumber(0)
