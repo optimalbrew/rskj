@@ -24,7 +24,7 @@ import co.rsk.db.RepositorySnapshot;
 import co.rsk.db.RepositoryLocator;
 import co.rsk.net.light.message.BlockReceiptsMessage;
 import co.rsk.net.light.message.CodeMessage;
-import co.rsk.net.light.message.TestMessage;
+import co.rsk.net.light.message.StatusMessage;
 import org.ethereum.net.message.Message;
 import co.rsk.net.light.message.TransactionIndexMessage;
 import org.bouncycastle.util.encoders.Hex;
@@ -134,7 +134,7 @@ public class LightProcessor {
         throw new UnsupportedOperationException("Not supported Code processing");
     }
 
-    public void processTestMessage(TestMessage testMessage, MessageQueue msgQueue) {
-        msgQueue.sendMessage(testMessage);
+    public void processStatusMessage(StatusMessage statusMessage, MessageQueue msgQueue) {
+        msgQueue.sendMessage(statusMessage);
     }
 }
