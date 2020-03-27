@@ -17,7 +17,12 @@ public enum LightClientMessageCodes {
 
     GET_CODE(0x05),
 
-    CODE(0x06);
+    CODE(0x06),
+
+    GET_ACCOUNTS(0x07),
+
+    ACCOUNTS(0x08);
+
 
     private final int cmd;
 
@@ -34,7 +39,7 @@ public enum LightClientMessageCodes {
     }
 
     public static boolean inRange(byte code) {
-        return code >= TEST.asByte() && code <= CODE.asByte();
+        return code >= TEST.asByte() && code <= ACCOUNTS.asByte();
     }
 
     public static LightClientMessageCodes fromByte(byte i) {

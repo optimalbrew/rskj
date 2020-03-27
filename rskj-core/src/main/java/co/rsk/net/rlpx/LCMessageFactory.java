@@ -35,11 +35,15 @@ public class LCMessageFactory {
             case GET_TRANSACTION_INDEX:
                 return new GetTransactionIndexMessage(encoded);
             case TRANSACTION_INDEX:
-               return new TransactionIndexMessage(encoded);
+                return new TransactionIndexMessage(encoded);
             case GET_CODE:
                 return new GetCodeMessage(encoded);
             case CODE:
                 return new CodeMessage(encoded);
+            case GET_ACCOUNTS:
+                return new GetAccountsMessage(encoded);
+            case ACCOUNTS:
+                return new AccountsMessage(encoded);
             default:
                 throw new IllegalArgumentException("No such message");
         }
