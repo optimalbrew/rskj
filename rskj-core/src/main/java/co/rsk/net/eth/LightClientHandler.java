@@ -87,6 +87,9 @@ public class LightClientHandler extends SimpleChannelInboundHandler<LightClientM
             case ACCOUNTS:
                 logger.debug("Read message: {} ACCOUNTS. Sending code response", msg);
                 AccountsMessage accountsMsg = (AccountsMessage) msg;
+                lightProcessor.processAccountsMessage(accountsMsg.getId(), accountsMsg.getMerkleInclusionProof(),
+                        accountsMsg.getNonce(), accountsMsg.getBalance(), accountsMsg.getCodeHash(),
+                        accountsMsg.getStorageRoot(), msgQueue);
                 break;
             default:
                 break;
