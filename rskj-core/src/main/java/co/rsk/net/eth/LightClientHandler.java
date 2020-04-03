@@ -18,12 +18,12 @@
 
 package co.rsk.net.eth;
 
+import co.rsk.net.light.LightPeer;
 import co.rsk.net.light.LightProcessor;
 import co.rsk.net.light.LightSyncProcessor;
 import co.rsk.net.light.message.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import org.ethereum.net.MessageQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,14 +35,14 @@ import org.slf4j.LoggerFactory;
 
 public class LightClientHandler extends SimpleChannelInboundHandler<LightClientMessage> {
     private static final Logger logger = LoggerFactory.getLogger("lightnet");
-    private final MessageQueue msgQueue;
+    private final LightPeer lightPeer;
     private LightSyncProcessor lightSyncProcessor;
     private LightProcessor lightProcessor;
 
-    public LightClientHandler(MessageQueue msgQueue, LightProcessor lightProcessor, LightSyncProcessor lightSyncProcessor) {
-        this.msgQueue = msgQueue;
+    public LightClientHandler(LightPeer lightPeer, LightProcessor lightProcessor, LightSyncProcessor lightSyncProcessor) {
         this.lightProcessor = lightProcessor;
         this.lightSyncProcessor = lightSyncProcessor;
+        this.lightPeer = lightPeer;
     }
 
     @Override
@@ -50,38 +50,38 @@ public class LightClientHandler extends SimpleChannelInboundHandler<LightClientM
         switch (msg.getCommand()) {
             case STATUS:
                 logger.debug("Read message: {} STATUS. Sending Test response", msg);
-                lightSyncProcessor.processStatusMessage((StatusMessage) msg, msgQueue, ctx, this);
+                lightSyncProcessor.processStatusMessage((StatusMessage) msg, lightPeer, ctx, this);
                 break;
             case GET_BLOCK_RECEIPTS:
                 logger.debug("Read message: {} GET_BLOCK_RECEIPTS. Sending receipts request", msg);
                 GetBlockReceiptsMessage getBlockReceiptsMsg = (GetBlockReceiptsMessage) msg;
-                lightProcessor.processGetBlockReceiptsMessage(getBlockReceiptsMsg.getId(), getBlockReceiptsMsg.getBlockHash(), msgQueue);
+                lightProcessor.processGetBlockReceiptsMessage(getBlockReceiptsMsg.getId(), getBlockReceiptsMsg.getBlockHash(), lightPeer);
                 break;
             case BLOCK_RECEIPTS:
                 logger.debug("Read message: {} BLOCK_RECEIPTS. Sending receipts response", msg);
                 BlockReceiptsMessage blockReceiptsMsg = (BlockReceiptsMessage) msg;
-                lightProcessor.processBlockReceiptsMessage(blockReceiptsMsg.getId(), blockReceiptsMsg.getBlockReceipts(), msgQueue);
+                lightProcessor.processBlockReceiptsMessage(blockReceiptsMsg.getId(), blockReceiptsMsg.getBlockReceipts(), lightPeer);
                 break;
             case GET_TRANSACTION_INDEX:
                 logger.debug("Read message: {} GET_TRANSACTION_INDEX.", msg);
                 GetTransactionIndexMessage getTxIndexMsg = new GetTransactionIndexMessage(msg.getEncoded());
-                lightProcessor.processGetTransactionIndex(getTxIndexMsg.getId(), getTxIndexMsg.getTxHash(), msgQueue);
+                lightProcessor.processGetTransactionIndex(getTxIndexMsg.getId(), getTxIndexMsg.getTxHash(), lightPeer);
                 break;
             case TRANSACTION_INDEX:
                 logger.debug("Read message: {} TRANSACTION_INDEX.", msg);
                 TransactionIndexMessage txIndexMsg = new TransactionIndexMessage(msg.getEncoded());
                 lightProcessor.processTransactionIndexMessage(txIndexMsg.getId(), txIndexMsg.getBlockNumber(),
-                        txIndexMsg.getBlockHash(), txIndexMsg.getTransactionIndex(), msgQueue);
+                        txIndexMsg.getBlockHash(), txIndexMsg.getTransactionIndex(), lightPeer);
                 break;
             case GET_CODE:
                 logger.debug("Read message: {} GET_CODE. Sending code request", msg);
                 GetCodeMessage getCodeMsg = (GetCodeMessage) msg;
-                lightProcessor.processGetCodeMessage(getCodeMsg.getId(), getCodeMsg.getBlockHash(), getCodeMsg.getAddress(), msgQueue);
+                lightProcessor.processGetCodeMessage(getCodeMsg.getId(), getCodeMsg.getBlockHash(), getCodeMsg.getAddress(), lightPeer);
                 break;
             case CODE:
                 logger.debug("Read message: {} CODE. Sending code response", msg);
                 CodeMessage codeMsg = (CodeMessage) msg;
-                lightProcessor.processCodeMessage(codeMsg.getId(), codeMsg.getCodeHash(), msgQueue);
+                lightProcessor.processCodeMessage(codeMsg.getId(), codeMsg.getCodeHash(), lightPeer);
                 break;
             default:
                 break;
@@ -90,10 +90,10 @@ public class LightClientHandler extends SimpleChannelInboundHandler<LightClientM
     }
 
     public void activate() {
-        lightSyncProcessor.sendStatusMessage(msgQueue);
+        lightSyncProcessor.sendStatusMessage(lightPeer);
     }
 
     public interface Factory {
-        LightClientHandler newInstance(MessageQueue messageQueue);
+        LightClientHandler newInstance(LightPeer lightPeer);
     }
 }

@@ -22,7 +22,10 @@ import co.rsk.core.RskAddress;
 import co.rsk.crypto.Keccak256;
 import co.rsk.db.RepositoryLocator;
 import co.rsk.db.RepositorySnapshot;
+import co.rsk.net.eth.LightClientHandler;
+import co.rsk.net.light.LightPeer;
 import co.rsk.net.light.LightProcessor;
+import co.rsk.net.light.LightSyncProcessor;
 import co.rsk.net.light.message.BlockReceiptsMessage;
 import co.rsk.net.light.message.CodeMessage;
 import co.rsk.net.light.message.TransactionIndexMessage;
@@ -32,6 +35,7 @@ import org.ethereum.crypto.HashUtil;
 import org.ethereum.db.BlockStore;
 import org.ethereum.db.TransactionInfo;
 import org.ethereum.net.MessageQueue;
+import org.ethereum.net.server.Channel;
 import org.ethereum.vm.LogInfo;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +64,7 @@ public class LightProcessorTest {
     private MessageQueue msgQueue;
     private Keccak256 blockHash;
     private RepositoryLocator repositoryLocator;
+    private LightPeer lightPeer;
 
     @Before
     public void setup(){
@@ -69,6 +74,7 @@ public class LightProcessorTest {
         lightProcessor = new LightProcessor(blockchain, blockStore, repositoryLocator);
         msgQueue = spy(MessageQueue.class);
         blockHash = new Keccak256(HASH_1);
+        lightPeer = new LightPeer(mock(Channel.class), msgQueue);
     }
 
     @Test
@@ -93,14 +99,14 @@ public class LightProcessorTest {
         BlockReceiptsMessage expectedMessage = new BlockReceiptsMessage(0, receipts);
 
         ArgumentCaptor<BlockReceiptsMessage> argument = forClass(BlockReceiptsMessage.class);
-        lightProcessor.processGetBlockReceiptsMessage(requestId, block.getHash().getBytes(), msgQueue);
+        lightProcessor.processGetBlockReceiptsMessage(requestId, block.getHash().getBytes(), lightPeer);
         verify(msgQueue).sendMessage(argument.capture());
         assertArrayEquals(expectedMessage.getEncoded(), argument.getValue().getEncoded());
     }
 
     @Test
     public void processGetBlockReceiptMessageWithInvalidBlockHash() {
-        lightProcessor.processGetBlockReceiptsMessage(0, blockHash.getBytes(), msgQueue);
+        lightProcessor.processGetBlockReceiptsMessage(0, blockHash.getBytes(), lightPeer);
         verify(msgQueue, times(0)).sendMessage(any());
     }
 
@@ -110,7 +116,7 @@ public class LightProcessorTest {
         List<TransactionReceipt> receipts = new LinkedList<>();
         String expected = "Not supported BlockReceipt processing";
         try {
-            lightProcessor.processBlockReceiptsMessage(requestId, receipts, msgQueue);
+            lightProcessor.processBlockReceiptsMessage(requestId, receipts, lightPeer);
         } catch (UnsupportedOperationException e) {
             assertEquals(expected, e.getMessage());
         }
@@ -141,21 +147,21 @@ public class LightProcessorTest {
         TransactionIndexMessage expectedMessage = new TransactionIndexMessage(id, blockNumber, block.getHash().getBytes(), txIndex);
 
         ArgumentCaptor<TransactionIndexMessage> argument = forClass(TransactionIndexMessage.class);
-        lightProcessor.processGetTransactionIndex(id, txHash.getBytes(), msgQueue);
+        lightProcessor.processGetTransactionIndex(id, txHash.getBytes(), lightPeer);
         verify(msgQueue).sendMessage(argument.capture());
         assertArrayEquals(expectedMessage.getEncoded(), argument.getValue().getEncoded());
     }
 
     @Test
     public void processGetTransactionIndexMessageWithIncorrectBlockHash() {
-        lightProcessor.processGetTransactionIndex(100, new Keccak256(HASH_1).getBytes(), msgQueue);
+        lightProcessor.processGetTransactionIndex(100, new Keccak256(HASH_1).getBytes(), lightPeer);
         verify(msgQueue, times(0)).sendMessage(any());
     }
 
     @Test
     public void processTransactionIndexMessageAndShouldThrowAnException() {
         try {
-            lightProcessor.processTransactionIndexMessage(0, 0, null, 0, msgQueue);
+            lightProcessor.processTransactionIndexMessage(0, 0, null, 0, lightPeer);
         } catch (UnsupportedOperationException e) {
             assertEquals("Not supported TransactionIndexMessage processing", e.getMessage());
         }
@@ -178,7 +184,7 @@ public class LightProcessorTest {
         CodeMessage expectedMessage = new CodeMessage(id, codeHash);
 
         ArgumentCaptor<CodeMessage> argument = forClass(CodeMessage.class);
-        lightProcessor.processGetCodeMessage(id, blockHash.getBytes(), address.getBytes(), msgQueue);
+        lightProcessor.processGetCodeMessage(id, blockHash.getBytes(), address.getBytes(), lightPeer);
         verify(msgQueue).sendMessage(argument.capture());
 
         assertArrayEquals(expectedMessage.getEncoded(), argument.getValue().getEncoded());
@@ -189,7 +195,7 @@ public class LightProcessorTest {
         long id = 100;
         RskAddress address = randomAddress();
 
-        lightProcessor.processGetCodeMessage(id, blockHash.getBytes(), address.getBytes(), msgQueue);
+        lightProcessor.processGetCodeMessage(id, blockHash.getBytes(), address.getBytes(), lightPeer);
         verify(msgQueue, times(0)).sendMessage(any());
     }
 
@@ -200,7 +206,7 @@ public class LightProcessorTest {
 
         String expected = "Not supported Code processing";
         try {
-            lightProcessor.processCodeMessage(requestId, codeHash, msgQueue);
+            lightProcessor.processCodeMessage(requestId, codeHash, lightPeer);
         } catch (UnsupportedOperationException e) {
             assertEquals(expected, e.getMessage());
         }
