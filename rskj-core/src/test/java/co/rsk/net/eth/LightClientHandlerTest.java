@@ -25,6 +25,7 @@ import co.rsk.db.RepositoryLocator;
 import co.rsk.db.RepositorySnapshot;
 import co.rsk.net.light.LightPeer;
 import co.rsk.net.light.LightProcessor;
+import co.rsk.net.light.LightStatus;
 import co.rsk.net.light.LightSyncProcessor;
 import co.rsk.net.light.message.*;
 import io.netty.channel.ChannelHandlerContext;
@@ -122,7 +123,8 @@ public class LightClientHandlerTest {
         when(genesis.getHash()).thenReturn(genesisHash);
         when(config.networkId()).thenReturn(networkId);
 
-        StatusMessage statusMessage = new StatusMessage(0L, protocolVersion, networkId, blockDifficulty, blockHash.getBytes(), bestNumber, genesisHash.getBytes());
+        LightStatus status = new LightStatus(protocolVersion, networkId, blockDifficulty, blockHash.getBytes(), bestNumber, genesisHash.getBytes());
+        StatusMessage statusMessage = new StatusMessage(0L, status);
 
         lightClientHandler.activate();
 
@@ -139,7 +141,8 @@ public class LightClientHandlerTest {
 
         when(genesis.getHash()).thenReturn(genesisHash);
 
-        StatusMessage m = new StatusMessage(0L, (byte) 1, 0, blockDifficulty, blockHash.getBytes(), bestNumber, genesisHash.getBytes());
+        LightStatus status = new LightStatus((byte) 1, 0, blockDifficulty, blockHash.getBytes(), bestNumber, genesisHash.getBytes());
+        StatusMessage m = new StatusMessage(0L, status);
 
         lightClientHandler.channelRead0(ctx, m);
 
@@ -153,7 +156,9 @@ public class LightClientHandlerTest {
 
         when(genesis.getHash()).thenReturn(genesisHash);
 
-        StatusMessage m = new StatusMessage(0L, (byte) 0, 55, blockDifficulty, blockHash.getBytes(), bestNumber, genesisHash.getBytes());
+        LightStatus status = new LightStatus((byte) 0, 55, blockDifficulty, blockHash.getBytes(), bestNumber, genesisHash.getBytes());
+        StatusMessage m = new StatusMessage(0L, status);
+
 
         lightClientHandler.channelRead0(ctx, m);
 
@@ -166,8 +171,8 @@ public class LightClientHandlerTest {
         BlockDifficulty blockDifficulty = mock(BlockDifficulty.class);
         byte[] invalidHash = HashUtil.randomHash();
 
-        StatusMessage m = new StatusMessage(0L, (byte) 0, 0, blockDifficulty, blockHash.getBytes(), bestNumber, invalidHash);
-
+        LightStatus status = new LightStatus((byte) 0, 0, blockDifficulty, blockHash.getBytes(), bestNumber, invalidHash);
+        StatusMessage m = new StatusMessage(0L, status);
         lightClientHandler.channelRead0(ctx, m);
 
         verify(messageQueue).disconnect(eq(ReasonCode.UNEXPECTED_GENESIS));
