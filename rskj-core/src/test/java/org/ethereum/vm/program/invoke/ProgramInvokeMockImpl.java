@@ -141,13 +141,17 @@ public class ProgramInvokeMockImpl implements ProgramInvoke {
         return gasLimit;
     }
 
+    public void setGas(long gasLimit) {
+        this.gasLimit = gasLimit;
+    }
+
     /*           RENTGAS op       */
     public long  getRentGas() {
 
         return rentGasLimit;
     }
 
-    public void setGas(long rentGasLimit) {
+    public void setRentGas(long rentGasLimit) {
         this.rentGasLimit = rentGasLimit;
     }
 
