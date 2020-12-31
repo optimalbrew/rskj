@@ -393,6 +393,21 @@ public class VMComplexRentTest {
     }
 
     //#created december 2020
+    /** test5Call and test5DelegateCall ensure that rentTracking is not duplicated for
+     * nodes seen at different call stacks depths. 
+     * A. Pass a set of all keys seen thus far to Calls (using `getProgramV2()`)
+     * B. Delegate call is another way of doing this. Interact with the same storage cells from different call depths
+     * 
+     * Cascade: B -> Call (C) -> Call (A) and B -> Call(C) -> DelegateCall (A)
+     * The number of nodes we expect to track in these tests
+     * - 5 nodes each for contracts A and C: Account, Code, StorageRoot, 2 Storage Cells
+     * - 3 for contract B: Account, code, and storage root (no interactions with cells)
+     * Total of 13 nodes
+     * Tracker will skip collecting rent (too low) for 4 of these (Code for A), and storage root for all 3 contracts will
+     * test5DelegateCall will not interact with contract A's storage cells anymore.. thus reducing total nodes tracked to 11
+     * 
+    */
+    
     @Test 
     public void test5Call() { //based on test2
         /**This test: B -> Call(C), C -> Call(A) .. test2 has B -> Call(A) directly
@@ -676,7 +691,7 @@ public class VMComplexRentTest {
     @Test
     public void test5DelegateCall() {
         /**same as test5Call() but uses delegate call
-         * This test: B -> CALL(C), C->DelegateCall(A) .. test2 has B->Call(A) directly
+         * This test: B -> CALL(C), C-> DelegateCall(A) .. test2 has B -> Call(A) directly
          * Contract A: As in test2, it stores the first 2 values of calldata in msg received in storage
          * Contract B: In test2, it stores 3 values (hardcoded to 11, 22, 33) in memory. 
          *  - Then makes a call to contract A with those values. The first 2 get stored.
@@ -699,10 +714,11 @@ public class VMComplexRentTest {
          
         //For contract B which will call Contract C
         //The only change from test2() is the address it calls (replace A's with C's)
-        String code_B2C = "6000601f5360e05960e05952600060c05901536060596020015980602001600b905280604001601690528060600160219052608090526000"+
+        String code_B2C = "6000601f5360e05960e05952600060c05901536060596020015980602001600b90528060400160169052806060016021905260809052"+
+        "6000"+
         "73"+"cd2a3d9f938e13cd947ec05abc7fe734df8dd826"+ // replace addr A with C 
         "5a" + //"6203e800
-        "f1" +
+        "f1" + //f1 or f4
         "602060000260a0016020015160005200";
         
         // contract C will call contract A.
