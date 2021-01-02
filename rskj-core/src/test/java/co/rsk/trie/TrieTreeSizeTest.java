@@ -36,7 +36,8 @@ public class TrieTreeSizeTest {
         Trie trie = new Trie()
                 .put(new byte[]{0x00}, new byte[]{0x01})
                 .put(new byte[]{0x01}, new byte[32]);
-        Assert.assertThat(trie.getChildrenSize(), is(35L));
+        Assert.assertThat(trie.getChildrenSize(), is(35L+16)); //#mish rent timestamp increases size by 8 bytes per node
+        //System.out.println(trie.getChildrenSize());
     }
 
     @Test
@@ -44,6 +45,7 @@ public class TrieTreeSizeTest {
         Trie trie = new Trie()
                 .put(new byte[]{0x00}, new byte[]{0x01})
                 .put(new byte[]{0x01}, new byte[33]);
-        Assert.assertThat(trie.getChildrenSize(), is(71L));
+        Assert.assertThat(trie.getChildrenSize(), is(71L+16));
+        //System.out.println(trie.getChildrenSize());
     }
 }

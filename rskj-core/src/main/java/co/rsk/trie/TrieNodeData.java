@@ -17,4 +17,11 @@ public interface TrieNodeData {
     // if isNew() then getLastRentPaidTime() should NOT be called
     public long getLastRentPaidTime();
     public Keccak256 getValueHash();
+    
+    /**#mish notes 
+     * implemented in rskj-core/src/main/java/co/rsk/db/TrieNodeDataFromCache
+     *  - there is has 2 fields, byte[] cachedata (encoded Trie) and timestamp
+     * I added a node version field to trie. With getNodeVersion() method. Any use with this interface?
+     *  - can be used for explicit checks when updating old nodes (version 1) without timestamps 
+     */
 }

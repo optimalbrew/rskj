@@ -268,7 +268,7 @@ public class GasCost {
 
 
     /**
-     * calculate storage rent (RSKIP113). Rent is computed in units of has per byte stored per second
+     * calculate storage rent (RSKIP113). Rent is computed in units of gas per byte stored per second
      * @param valueLength : actual length of data stored in a trie node representing bytes stored 
                 (an overhead of 128 bytes is added)
      * @param timeDelta : time period for computing storage rent in seconds (can be negative, future timestamp i.e. prepaid)

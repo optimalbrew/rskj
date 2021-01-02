@@ -1499,4 +1499,12 @@ public class Trie implements TrieNodeData {
         return lastRentPaidTime;
     }
 
+
+    /** #mish notes: 
+     * I added a new field (1 byte) for node version in Trie. 
+     *      - Reason: for toTessage(). Should encoding use rent timestamp
+     * This version encoding rule uses timestamp!=0 to decide
+     * I use (byte) casting for flags.
+     */
+
 }

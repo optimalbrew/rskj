@@ -45,6 +45,9 @@ public class TransactionExecutorTest {
     private ExecutorService vmExecution;
     private int txIndex;
     private long gasUsedInTheBlock;
+    
+    //#mish added
+    private RentTracker rentTracker;
 
     @Before
     public void setUp() {
@@ -65,7 +68,14 @@ public class TransactionExecutorTest {
         precompiledContracts = mock(PrecompiledContracts.class);
         deletedAccounts = new HashSet<>();
         vmExecution = mock(ExecutorService.class);
+        
+        //#mish add mocks for RentTracker
+        //rentTracker = mock(RentTracker.class);
+
         when(executionBlock.getNumber()).thenReturn(10L);
+
+
+
     }
 
     @Test
@@ -85,15 +95,19 @@ public class TransactionExecutorTest {
         // paperwork: transaction has high gas limit, execution block has normal gas limit
         // and the nonces are okey
         when(transaction.getGasLimit()).thenReturn(BigInteger.valueOf(4000000).toByteArray());
+        when(transaction.getRentGasLimit()).thenReturn(BigInteger.valueOf(2000000).toByteArray());
+
         when(executionBlock.getGasLimit()).thenReturn(BigInteger.valueOf(6800000).toByteArray());
-        when(repository.getNonce(transaction.getSender())).thenReturn(BigInteger.valueOf(1L));
+       
+        //#mish signature of getNonce changed
+        when(repository.getNonce(transaction.getSender(), false)).thenReturn(BigInteger.valueOf(1L));
         when(transaction.getNonce()).thenReturn(BigInteger.valueOf(1L).toByteArray());
         // more paperwork, the receiver is just someone
         RskAddress receiver = new RskAddress("0000000000000000000000000000000000000001");
         when(transaction.getReceiveAddress()).thenReturn(receiver);
         when(transaction.acceptTransactionSignature(constants.getChainId())).thenReturn(true);
         // sender has no balance
-        when(repository.getBalance(transaction.getSender())).thenReturn(new Coin(BigInteger.valueOf(0L)));
+        when(repository.getBalance(transaction.getSender(), true)).thenReturn(new Coin(BigInteger.valueOf(0L)));
         // but is sending some nice value over the wire
         when(transaction.getValue()).thenReturn(new Coin(BigInteger.valueOf(68000)));
         // note that the transaction is free of cost
@@ -101,7 +115,7 @@ public class TransactionExecutorTest {
         assertFalse(txExecutor.executeTransaction());
     }
 
-    @Test
+    @Test //
     public void txInBlockIsExecutedAndShouldBeAddedInCache(){
         ReceivedTxSignatureCache receivedTxSignatureCache = mock(ReceivedTxSignatureCache.class);
         BlockTxSignatureCache blockTxSignatureCache = new BlockTxSignatureCache(receivedTxSignatureCache);
@@ -116,8 +130,12 @@ public class TransactionExecutorTest {
         Coin gasPrice = Coin.valueOf(1);
         Coin value = new Coin(BigInteger.valueOf(2));
 
-        when(repository.getNonce(sender)).thenReturn(BigInteger.valueOf(1L));
-        when(repository.getBalance(sender)).thenReturn(new Coin(BigInteger.valueOf(68000L)));
+        when(repository.getNonce(sender, false)).thenReturn(BigInteger.valueOf(1L));
+        when(repository.getNonce(sender, true)).thenReturn(BigInteger.valueOf(1L));
+        when(repository.getBalance(sender, false)).thenReturn(new Coin(BigInteger.valueOf(68000L)));
+        when(repository.getBalance(sender, true)).thenReturn(new Coin(BigInteger.valueOf(68000L)));
+
+
         Transaction transaction = getTransaction(sender, receiver, gasLimit, txNonce, gasPrice, value);
 
         assertTrue(executeValidTransaction(transaction, blockTxSignatureCache));
@@ -125,7 +143,7 @@ public class TransactionExecutorTest {
         assertArrayEquals(blockTxSignatureCache.getSender(transaction).getBytes(), sender.getBytes());
     }
 
-    @Test
+    @Test //
     public void TwoTxsAreInBlockAndThemShouldBeContainedInCache(){
         ReceivedTxSignatureCache receivedTxSignatureCache = mock(ReceivedTxSignatureCache.class);
         BlockTxSignatureCache blockTxSignatureCache = new BlockTxSignatureCache(receivedTxSignatureCache);
@@ -159,7 +177,7 @@ public class TransactionExecutorTest {
         assertArrayEquals(blockTxSignatureCache.getSender(transaction2).getBytes(), sender2.getBytes());
     }
 
-    @Test
+    @Test //
     public void InvalidTxsIsInBlockAndShouldntBeInCache(){
         ReceivedTxSignatureCache receivedTxSignatureCache = mock(ReceivedTxSignatureCache.class);
         BlockTxSignatureCache blockTxSignatureCache = new BlockTxSignatureCache(receivedTxSignatureCache);
@@ -192,7 +210,7 @@ public class TransactionExecutorTest {
         assertFalse(blockTxSignatureCache.containsTx(transaction));
     }
 
-    @Test
+    @Test //
     public void remascTxIsReceivedAndShouldntBeInCache(){
         ReceivedTxSignatureCache receivedTxSignatureCache = mock(ReceivedTxSignatureCache.class);
         BlockTxSignatureCache blockTxSignatureCache = new BlockTxSignatureCache(receivedTxSignatureCache);
@@ -225,7 +243,7 @@ public class TransactionExecutorTest {
         assertFalse(blockTxSignatureCache.containsTx(transaction));
     }
 
-    @Test
+    @Test //
     public void txInBlockIsReceivedAndShouldBeUsedInTxExecutorInsteadOfComputeSender(){
         ReceivedTxSignatureCache receivedTxSignatureCache = mock(ReceivedTxSignatureCache.class);
         BlockTxSignatureCache blockTxSignatureCache = new BlockTxSignatureCache(receivedTxSignatureCache);
@@ -234,7 +252,7 @@ public class TransactionExecutorTest {
         when(repository.startTracking()).thenReturn(cacheTrack);
 
         RskAddress sender = new RskAddress("0000000000000000000000000000000000000001");
-        RskAddress receiver = new RskAddress("0000000000000000000000000000000000000002");
+        RskAddress receiver = new RskAddress("0000000000000000000000000finalization000000000000002");
         byte[] gasLimit = BigInteger.valueOf(4000000).toByteArray();
         byte[] txNonce = BigInteger.valueOf(1L).toByteArray();
         Coin gasPrice = Coin.valueOf(1);
@@ -252,7 +270,7 @@ public class TransactionExecutorTest {
         assertArrayEquals(blockTxSignatureCache.getSender(transaction).getBytes(), sender.getBytes());
     }
 
-    @Test
+    @Test //
     public void firstTxIsRemovedWhenTheCacheLimitSizeIsExceeded() {
         ReceivedTxSignatureCache receivedTxSignatureCache = mock(ReceivedTxSignatureCache.class);
         BlockTxSignatureCache blockTxSignatureCache = new BlockTxSignatureCache(receivedTxSignatureCache);
@@ -305,6 +323,7 @@ public class TransactionExecutorTest {
         when(transaction.getSender()).thenReturn(sender);
         when(transaction.getGasPrice()).thenReturn(gasPrice);
         when(transaction.getGasLimit()).thenReturn(gasLimit);
+        when(transaction.getRentGasLimit()).thenReturn(gasLimit);
         when(transaction.getSender(any())).thenCallRealMethod();
         when(transaction.getNonce()).thenReturn(txNonce);
         when(transaction.getReceiveAddress()).thenReturn(receiver);

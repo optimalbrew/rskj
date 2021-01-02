@@ -91,6 +91,7 @@ public class MutableRepository implements Repository {
     @Override
     public synchronized AccountState createAccount(RskAddress addr) {
         AccountState accountState = new AccountState();
+        //#mish rent tracking is handled inside updateAccountState
         updateAccountState(addr, accountState);
         return accountState;
     }

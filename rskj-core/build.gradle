@@ -19,6 +19,7 @@ test {
     testLogging {
         events "failed"
         exceptionFormat "short"
+        showStandardStreams true
     }
     finalizedBy jacocoTestReport
 }

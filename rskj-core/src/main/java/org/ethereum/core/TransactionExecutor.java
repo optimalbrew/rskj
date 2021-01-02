@@ -9,7 +9,7 @@
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty offinalization
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
@@ -146,12 +146,15 @@ public class TransactionExecutor {
      * @return true if the transaction is valid and executed, false if the transaction is invalid
      */
     public boolean executeTransaction() {
+        //logger.info("start init");
         if (!this.init()) {
             return false;
         }
-
+        //logger.info("start exec");
         this.execute();
+        //logger.info("start go");
         this.go();
+        //logger.info("start finalization");
         this.finalization();
 
         return true;
@@ -166,7 +169,7 @@ public class TransactionExecutor {
         track.setRentTracker(rentTracker); // temporary rent tracker
         try {
             basicTxCost = tx.transactionCost(constants, activations);
-
+            
             if (localCall) {
                 return true;
             }
@@ -399,7 +402,12 @@ public class TransactionExecutor {
 
         if (result.getException() == null) {
             Coin endowment = tx.getValue();
-            cacheTrack.transfer(tx.getSender(), targetAddress, endowment);
+            //#mish do not track rent for any logging!
+            //logger.info("Sender Balance: before transfer (track) {}", track.getBalance(tx.getSender(),false));
+            //logger.info("Sender Balance: before transfer cachetrack {}", cacheTrack.getBalance(tx.getSender(),false));
+            cacheTrack.transfer(tx.getSender(), targetAddress, endowment); //#mish should track rent for targetAdress..
+            //logger.info("Sender Balance: after transfer (track) {}", track.getBalance(tx.getSender(),false));
+            //logger.info("Sender Balance: after transfer cachetrack {}", cacheTrack.getBalance(tx.getSender(),false));
         }
     }
 
@@ -675,7 +683,7 @@ public class TransactionExecutor {
         this.paidFees = summaryFee;
 
         //#mish for testing
-        System.out.println("\nTX finalization " +
+        logger.info("\nTX finalization " +
                 "(is Remasc TX: " + isRemascTx + ")" +
                 "\n\nExec GasLimit " + GasCost.toGas(tx.getGasLimit()) +
                 "\nExec gas used " + result.getExecGasUsed() +
