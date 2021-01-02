@@ -49,7 +49,10 @@ public class CallCreate {
         String data = callCreateJSON.get("data").toString();
         String destination = callCreateJSON.get("destination").toString();
         String gasLimit = callCreateJSON.get("gasLimit").toString();
-        String rentGasLimit = callCreateJSON.get("rentGasLimit").toString();
+
+        //Just point rentGas to gas. Use same value from JSON file 
+        String rentGasLimit = callCreateJSON.get("gasLimit").toString();
+        //String rentGasLimit = callCreateJSON.get("rentGasLimit").toString(); //this would need changes in json file
         String value = callCreateJSON.get("value").toString();
 
         if (data != null && data.length() > 2)
