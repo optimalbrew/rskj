@@ -155,6 +155,8 @@ public class RentTracker {
                 if (rd > 0){
                     comboRent += rd;
                     nodeTrackingMap.put(storageKey, rd); //add seperately for each node 
+                } else{
+                    logger.info("Skip rent update (storage cell) for addr: {} and key: {}", addr, storageCellKey.longValue());
                 }
             } else {logger.info("node already checked");}
             // Don't return.. storage cell implies contract account
@@ -188,6 +190,8 @@ public class RentTracker {
             if (rd > 0){
                 comboRent += rd;
                 nodeTrackingMap.put(accKey, rd); //add only rent for specific nodes 
+            } else {
+                logger.info("Skip rent update (account info) for addr: {} ",addr);
             }
         }
         // if this is a contract then add info for storage root and code
@@ -211,6 +215,8 @@ public class RentTracker {
                 if (rd > 0){
                     comboRent += rd;
                     nodeTrackingMap.put(srKey, rd); //add only rent for specific nodes 
+                } else {
+                    logger.info("Skip rent update (storage root) for addr: {} ",addr);
                 }
             }
             // now the code containing node
@@ -237,6 +243,8 @@ public class RentTracker {
                 if (rd > 0){
                     comboRent += rd;
                     nodeTrackingMap.put(cKey, rd); //add only rent for specific nodes 
+                } else {
+                    logger.info("Skip rent update (code) for addr: {} ",addr);
                 }
             }        
         }
