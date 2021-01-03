@@ -22,7 +22,11 @@ package org.ethereum.jsontestsuite.builder;
 import org.ethereum.core.Transaction;
 import org.ethereum.jsontestsuite.model.TransactionTck;
 
+import org.ethereum.vm.GasCost;
+import java.math.BigInteger;
+
 import static org.ethereum.json.Utils.*;
+//import org.ethereum.util.ByteUtil;
 
 public class TransactionBuilder {
 
@@ -34,7 +38,8 @@ public class TransactionBuilder {
             transaction = new Transaction(
                     parseVarData(transactionTck.getNonce()),
                     parseVarData(transactionTck.getGasPrice()),
-                    parseVarData(transactionTck.getGasLimit()),
+                    //#mish for storage rent testing, double the amount of tx gas limit
+                    dblGas(parseVarData(transactionTck.getGasLimit())),
                     parseData(transactionTck.getTo()),
                     parseVarData(transactionTck.getValue()),
                     parseData(transactionTck.getData()));
@@ -45,7 +50,8 @@ public class TransactionBuilder {
             transaction = new Transaction(
                     parseNumericData(transactionTck.getNonce()),
                     parseNumericData(transactionTck.getGasPrice()),
-                    parseVarData(transactionTck.getGasLimit()),
+                    //#mish for storage rent testing, double the amount of tx gas limit
+                    dblGas(parseVarData(transactionTck.getGasLimit())),
                     parseData(transactionTck.getTo()),
                     parseNumericData(transactionTck.getValue()),
                     parseData(transactionTck.getData()),
@@ -56,5 +62,12 @@ public class TransactionBuilder {
         }
 
         return transaction;
+    }
+
+    //#mish for storage rent testing, double the amount of tx gas limit
+    private static byte[] dblGas (byte[] gas){
+        long gasBudget = GasCost.toGas(gas); // convert byte to long
+        gasBudget = 2*gasBudget; 
+        return BigInteger.valueOf(gasBudget).toByteArray();
     }
 }
