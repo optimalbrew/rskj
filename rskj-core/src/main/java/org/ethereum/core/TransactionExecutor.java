@@ -320,11 +320,11 @@ public class TransactionExecutor {
         logger.trace("Execute transaction {} {}", toBI(tx.getNonce()), tx.getHash());
         // set reference timestamp for rent computations
         refTimeStamp = this.executionBlock.getTimestamp();  //e.g.mock with 50L*365*24*3600 (2 years after RSK start)
-        if (refTimeStamp <=1){ //#mish this happens in some tests
+        /*if (refTimeStamp <=1){ //#mish this happens in some tests
             logger.warn("Block time stamp is {} in Unix seconds! Using Fallback", refTimeStamp);
             refTimeStamp = Instant.now().getEpochSecond(); // AVOID in production!! this can change when block executed twice (connection)
             logger.info("Fallback (system) time stamp is {} in Unix seconds", refTimeStamp);
-        }         
+        } */        
 
         // #mish add sender to Map of accessed nodes (for storage rent tracking)
         // but do NOT add receiver address yet, as it may be a pre-compiled contract
